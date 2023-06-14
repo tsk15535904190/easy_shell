@@ -11,7 +11,7 @@ typedef enum para_type
 } para_type_t;
 
 static const char WelcomeText[] = "\r\n"
-                                  "|APP shell Build: "__DATE__
+                                  "shell Build: "__DATE__
                                   " "__TIME__
                                   ">>\r\n";
 
@@ -49,7 +49,6 @@ uint32_t SHELL_Printf(const char *format, ...)
 void SHELL_PrintfBuf(const char *buf)
 {
     uint16_t len = strlen(buf);
-
     if (len)
     {
         SHELL_Printf(buf, len);
@@ -160,7 +159,13 @@ para_type_t cmd_get_para_type(const char *str)
 {
     size_t len = strlen((char *)str);
     uint8_t index = 0;
-    for (int i = 0; i < len; i++)
+    int i = 0;
+    if('-' == str[0])
+    {
+        i = 1 ;
+        index ++ ;
+    }
+    for (; i < len; i++)
     {
         if (str[i] >= '0' && str[i] <= '9')
         {
@@ -187,7 +192,7 @@ para_type_t cmd_get_para_type(const char *str)
         if (('0' == str[0]) && (('x' == str[1]) || ('X' == str[1])))
         {
             uint8_t flag;
-            for (int i = 2; i < len; i++)
+            for (i = 2; i < len; i++)
             {
                 char a = str[i];
                 if ((a >= 'A') && (a <= 'F') || (a >= 'a') && (a <= 'f') || (a >= '0') && (a <= '9'))
@@ -327,5 +332,11 @@ uint8_t shell_handleFunc(const char c)
     else
     {
         input_string[input_index++] = c;
+        if(input_index>=SHELL_CMD_MAX_LEN)
+        {
+            input_index = 0;
+            memset(input_string, 0, SHELL_CMD_MAX_LEN);
+            SHELL_Printf("input to long\r\n");
+        }
     }
 }
